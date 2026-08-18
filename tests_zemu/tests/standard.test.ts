@@ -168,6 +168,67 @@ describe('Standard', function () {
     }
   })
 
+  test.concurrent.each(DEVICE_MODELS)('get gonka address', async function (m) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name })
+      const app = new CosmosApp(sim.getTransport())
+
+      // Gonka derives on its registered SLIP-0044 coin type 1200
+      const path = "m/44'/1200'/0'/0/0"
+      const resp = await app.getAddressAndPubKey(path, 'gonka')
+
+      console.log(resp)
+
+      expect(resp).toHaveProperty('bech32_address')
+      expect(resp).toHaveProperty('compressed_pk')
+
+      expect(resp.bech32_address).toEqual('gonka1j0pzd70wr9muhpdp5ahladpzznq95lr3xwkrsg')
+      expect(resp.compressed_pk.length).toEqual(33)
+      expect(resp.compressed_pk.toString('hex')).toEqual(
+        '03a817a68f61b9ad3fb34e45a48f1dbb957b2bf81211cf61b2818bddc5550492a0'
+      )
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test.concurrent.each(DEVICE_MODELS)('gonka coin type rejects another hrp', async function (m) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name })
+      const app = new CosmosApp(sim.getTransport())
+
+      // Unlike coin type 118, coin type 1200 is bound to the gonka hrp
+      const resp = app.getAddressAndPubKey("m/44'/1200'/0'/0/0", 'cosmos')
+
+      await expect(resp).rejects.toMatchObject({
+        returnCode: 0x698c,
+        errorMessage: 'Chain config not supported',
+      })
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test.concurrent.each(DEVICE_MODELS)('reject unknown coin type', async function (m) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name })
+      const app = new CosmosApp(sim.getTransport())
+
+      // 529 (Secret Network) has no chain config entry: rejected at the APDU layer
+      const resp = app.getAddressAndPubKey("m/44'/529'/0'/0/0", 'secret')
+
+      await expect(resp).rejects.toMatchObject({
+        returnCode: 0x698b,
+        errorMessage: 'Invalid HD Path Coin Value',
+      })
+    } finally {
+      await sim.close()
+    }
+  })
+
   test.concurrent.each(DEVICE_MODELS)('show address HUGE', async function (m) {
     const sim = new Zemu(m.path)
     try {

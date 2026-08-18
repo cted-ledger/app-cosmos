@@ -107,10 +107,10 @@ __Z_INLINE void extractHDPath(uint32_t rx, uint32_t offset) {
   MEMCPY(hdPath, G_io_apdu_buffer + offset,
          sizeof(uint32_t) * HDPATH_LEN_DEFAULT);
 
-  // Check values
-  if (hdPath[0] != HDPATH_0_DEFAULT ||
-      ((hdPath[1] != HDPATH_1_DEFAULT) &&
-       (hdPath[1] != HDPATH_ETH_1_DEFAULT)) ||
+  // Check values. The accepted coin types are the built-in defaults plus the
+  // ones declared in the chain configuration; the (coin type, hrp) pair is
+  // validated by checkChainConfig once the HRP is known.
+  if (hdPath[0] != HDPATH_0_DEFAULT || !isSupportedCoinType(hdPath[1]) ||
       hdPath[3] != HDPATH_3_DEFAULT) {
     THROW(APDU_CODE_INVALID_HD_PATH_COIN_VALUE);
   }

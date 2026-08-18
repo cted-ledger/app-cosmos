@@ -85,12 +85,16 @@ The general structure of commands and responses is as follows:
 | HRP_LEN    | byte(1)        | Bech32 HRP Length              | 1<=HRP_LEN<=83 |
 | HRP        | byte (HRP_LEN) | Bech32 HRP                     |                |
 | Path[0]    | byte (4)       | Derivation Path Data           | 44             |
-| Path[1]    | byte (4)       | Derivation Path Data           | 118 / 60       |
+| Path[1]    | byte (4)       | Derivation Path Data           | 118/60/1200    |
 | Path[2]    | byte (4)       | Derivation Path Data           | ?              |
 | Path[3]    | byte (4)       | Derivation Path Data           | ?              |
 | Path[4]    | byte (4)       | Derivation Path Data           | ?              |
 
 First three items in the derivation path will be hardened automatically hardened
+
+Accepted `Path[1]` values are 118 (default Cosmos), 60 (Eth-style chains) and any coin type declared
+in the app's chain configuration - currently 1200 (Gonka). Coin type 118 is accepted with any HRP;
+every other coin type is accepted only with the HRP it is declared with.
 
 #### Response
 
@@ -125,7 +129,7 @@ All other packets/chunks should contain message to sign
 | Field      | Type     | Content                | Expected  |
 | ---------- | -------- | ---------------------- | --------- |
 | Path[0]    | byte (4)       | Derivation Path Data           | 44             |
-| Path[1]    | byte (4)       | Derivation Path Data           | 118 / 60       |
+| Path[1]    | byte (4)       | Derivation Path Data           | 118/60/1200    |
 | Path[2]    | byte (4)       | Derivation Path Data           | ?              |
 | Path[3]    | byte (4)       | Derivation Path Data           | ?              |
 | Path[4]    | byte (4)       | Derivation Path Data           | ?              |

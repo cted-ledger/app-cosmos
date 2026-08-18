@@ -23,8 +23,16 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+// Returns the address encoding for a (coin type, hrp) pair, or UNSUPPORTED when
+// the pair is not allowed. `path` is the hardened coin type element of the
+// derivation path (hdPath[1]).
 address_encoding_e checkChainConfig(uint32_t path, const char *hrp,
                                     uint8_t hrpLen);
+
+// Returns true when `path`, the hardened coin type element of the derivation
+// path (hdPath[1]), is one the app can handle: a built-in default (118 or 60)
+// or a coin type declared in the chain configuration.
+bool isSupportedCoinType(uint32_t path);
 
 #ifdef __cplusplus
 }
